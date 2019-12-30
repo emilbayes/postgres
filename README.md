@@ -111,13 +111,59 @@ const users = await sql`
 If you want to handle rows returned by a query one by one you can use `.stream` which returns a promise that resolves once there are no more rows.
 ```js
 
-await sql.stream`
+await sql`
   select created_at, name from events
 `.stream(row => {
   // row = { created_at: '2019-11-22T14:22:00Z', name: 'connected' }
 })
 
 // No more rows
+
+```
+
+## Cursor ```sql` `.cursor([rows = 1], fn) -> Promise```
+
+Use cursors if you need to throttle the amount of rows being returned from a query. New results won't be requested until the promise / async callack function has resolved.
+
+```js
+
+await sql.cursor`
+  select * from generate_series(1,4) as x
+`.cursor((row, cancel) => {
+  // row = { x: 1 }
+  http.request('https://example.com/wat', { row })
+})
+
+// No more rows
+
+```
+
+A single row will be returned by default, but you can also request batches by setting the number of rows desired in each batch as the first argument. That is usefull if you can do work with the rows in parallel like in this example:
+
+```js
+
+await sql.cursor`
+  select * from generate_series(1,1000) as x
+`.cursor(10, (rows, cancel) => {
+  // rows = [{ x: 1 }, { x: 2 }, ... ]
+  await Promise.all(rows.map(row =>
+    http.request('https://example.com/wat', { row })
+  ))
+})
+
+```
+
+If an error is thrown inside the callback function no more rows will be requested and the promise will reject with the thrown error.
+
+You can also stop receiving any more rows early by returning an end token `sql.END` from the callback function.
+
+```js
+
+await sql.cursor`
+  select * from generate_series(1,1000) as x
+`.cursor(row => {
+  return Math.random() > 0.9 && sql.END
+})
 
 ```
 
