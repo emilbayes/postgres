@@ -3,5 +3,5 @@ node_js:
   - node
   - lts/*
 
-services:
-  - postgresql
+addons:
+  postgresql: "11.4"
