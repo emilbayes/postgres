@@ -9,7 +9,8 @@ const postgres = require('../lib')
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
 const login = {
-  user: 'postgres_js_test'
+  user: 'postgres_js_test',
+  pass: ''
 }
 
 const login_clear = {
@@ -38,7 +39,7 @@ const options = {
 
 cp.execSync('dropdb --if-exists ' + options.db + ';createdb ' + options.db)
 ;[login, login_clear, login_md5, login_scram].forEach(x =>
-  cp.execSync('psql -c "grant all on database ' + options.db + ' to ' + x.user + '"')
+  cp.execSync('echo ' + x.pass  + ' | createuser --pwprompt --superuser ' + x.user)
 )
 
 const sql = postgres(options)
