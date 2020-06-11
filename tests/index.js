@@ -38,8 +38,9 @@ const options = {
 }
 
 cp.execSync('dropdb --if-exists ' + options.db + ';createdb ' + options.db)
+
 ;[login, login_clear, login_md5, login_scram].forEach(x =>
-  cp.execSync('echo ' + x.pass  + ' | createuser --pwprompt --superuser ' + x.user)
+  cp.execSync(`psql -d ${options.db} -c "CREATE ROLE ${x.user} PASSWORD '${x.pass}' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN"`)
 )
 
 const sql = postgres(options)
