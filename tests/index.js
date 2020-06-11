@@ -36,7 +36,7 @@ const options = {
   max: 1
 }
 
-cp.execSync('dropdb ' + options.db + ';createdb ' + options.db)
+cp.execSync('dropdb --if-exists ' + options.db + ';createdb ' + options.db)
 ;[login, login_clear, login_md5, login_scram].forEach(x =>
   cp.execSync('psql -c "grant all on database ' + options.db + ' to ' + x.user + '"')
 )
